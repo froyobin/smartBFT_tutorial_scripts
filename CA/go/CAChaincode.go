@@ -74,10 +74,37 @@ func (t *CAChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "query" {
 		// the old "Query" is now implemtned in invoke
 		return t.query(stub, args)
+	} else if function == "uploadblucktest" {
+		return t.uploadblucktest(stub, args)
 	}
 
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
 }
+
+func (t *CAChaincode) uploadblucktest(stub shim.ChaincodeStubInterface,
+	args[]string) pb.Response{
+		fmt.Println("uploading bluck test")
+		var i uint64
+		start,err := strconv.ParseUint(args[0], 10, 64)
+		if err != nil{
+			return shim.Error("error in parse argument 0 ")
+		}
+		end,err := strconv.ParseUint(args[1], 10, 64)
+		if err != nil{
+			return shim.Error("error in parse argument 1")
+		}
+
+		for i=start;i<end;i++{
+			args=[]string{strconv.FormatUint(i,10), "TEST"}
+			ret := t.uploaddomain(stub,args)
+			if ret.Payload != nil{
+				return ret
+			}
+		}
+
+	return shim.Success([]byte("Done"))
+}
+
 func (t *CAChaincode) uploaddomain(stub shim.ChaincodeStubInterface,
 	args []string) pb.Response {
 
