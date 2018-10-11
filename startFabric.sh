@@ -6,27 +6,40 @@
 #
 # Exit on first error
 set -e
-docker network create -d bridge bft_network
+set -x
+SOURCEPATH="/home/yb/sync_smart/smartBFT_tutorial_scripts"
 echo "setup the network done"
-docker run -d --rm --network=bft_network --name=bft.node.0 bftsmart/fabric-orderingnode:amd64-1.2.0 0
-sleep 1
-docker run -d --rm --network=bft_network --name=bft.node.1 bftsmart/fabric-orderingnode:amd64-1.2.0 1
-sleep 1
-docker run -d --rm --network=bft_network --name=bft.node.2 bftsmart/fabric-orderingnode:amd64-1.2.0 2
-sleep 1
-docker run -d --rm --network=bft_network --name=bft.node.3 bftsmart/fabric-orderingnode:amd64-1.2.0 3
-echo "create 4 pbf nodes"
+docker network create -d bridge bft_network
+
+for i in `seq 0 $1`;
+do 
+    echo $i
+    docker run -d --rm --network=bft_network --name=bft.node.$i -v $SOURCEPATH/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 $i
+    sleep 1
+done
+#sleep 1
+#docker run -d --rm --network=bft_network --name=bft.node.1 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 1
+#sleep 1
+#exit
+#docker run -d --rm --network=bft_network --name=bft.node.2 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 2
+#sleep 1
+#docker run -d --rm --network=bft_network --name=bft.node.3 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 3
+#sleep 1
+#docker run -d --rm --network=bft_network --name=bft.node.4 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 4
+#sleep 1
+#docker run -d --rm --network=bft_network --name=bft.node.5 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 5
+echo "create $1 pbf nodes"
 
 
 docker run -d --rm --network=bft_network --name=bft.frontend.1000 bftsmart/fabric-frontend:amd64-1.2.0 1000
-docker run -d --rm --network=bft_network --name=bft.frontend.2000 bftsmart/fabric-frontend:amd64-1.2.0 2000
+#docker run -d --rm --network=bft_network --name=bft.frontend.2000 bftsmart/fabric-frontend:amd64-1.2.0 2000
 echo "start the fronted server done"
 
 docker run -d --rm --network=bft_network -v /var/run/:/var/run/  --name=bft.peer.0 hyperledger/fabric-peer:amd64-1.2.0
-docker run -d --rm --network=bft_network -v /var/run/:/var/run/  --name=bft.peer.1 hyperledger/fabric-peer:amd64-1.2.0
+#docker run -d --rm --network=bft_network -v /var/run/:/var/run/  --name=bft.peer.1 hyperledger/fabric-peer:amd64-1.2.0
 echo "start two peers done"
-docker run -dit --rm --network=bft_network --name=bft.cli.0  -v /home/yb/development/smartBFT/scripts:/scripts -v /home/yb/development/smartBFT/CA:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/ -e CORE_PEER_ADDRESS=bft.peer.0:7051 bftsmart/fabric-tools:amd64-1.2.0
-docker run -dit --rm --network=bft_network --name=bft.cli.1  -v /home/yb/development/smartBFT/scripts:/scripts -v /home/yb/development/smartBFT/CA:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/ -e CORE_PEER_ADDRESS=bft.peer.0:7051 bftsmart/fabric-tools:amd64-1.2.0
+docker run -dit --rm --network=bft_network --name=bft.cli.0  -v $SOURCEPATH/scripts:/scripts -v $LOCALPATH/CA:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/ -e CORE_PEER_ADDRESS=bft.peer.0:7051 bftsmart/fabric-tools:amd64-1.2.0
+#docker run -dit --rm --network=bft_network --name=bft.cli.1  -v $SOURCEPATH/scripts:/scripts -v $LOCALPATH/CA:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/ -e CORE_PEER_ADDRESS=bft.peer.0:7051 bftsmart/fabric-tools:amd64-1.2.0
 
 
 echo "create two cli client"
