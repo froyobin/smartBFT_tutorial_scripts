@@ -83,6 +83,7 @@ func main() {
 		end = start + step
 		out := fmt.Sprintf("uploading... %d -- %d", start, end)
 		fmt.Println(out)
+		fmt.Println(end/num)
 		ret = uploadTest(strconv.FormatUint(start, 10), strconv.FormatUint(end, 10))
 		if ret == -1 {
 			exception = true
