@@ -7,7 +7,7 @@
 # Exit on first error
 set -e
 set -x
-SOURCEPATH="/home/yb/sync_smart/smartBFT_tutorial_scripts"
+SOURCEPATH=$(pwd)
 echo "setup the network done"
 docker network create -d bridge bft_network
 
@@ -38,8 +38,8 @@ echo "start the fronted server done"
 docker run -d --rm --network=bft_network -v /var/run/:/var/run/  --name=bft.peer.0 hyperledger/fabric-peer:amd64-1.2.0
 #docker run -d --rm --network=bft_network -v /var/run/:/var/run/  --name=bft.peer.1 hyperledger/fabric-peer:amd64-1.2.0
 echo "start two peers done"
-docker run -dit --rm --network=bft_network --name=bft.cli.0  -v $SOURCEPATH/scripts:/scripts -v $LOCALPATH/CA:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/ -e CORE_PEER_ADDRESS=bft.peer.0:7051 bftsmart/fabric-tools:amd64-1.2.0
-#docker run -dit --rm --network=bft_network --name=bft.cli.1  -v $SOURCEPATH/scripts:/scripts -v $LOCALPATH/CA:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/ -e CORE_PEER_ADDRESS=bft.peer.0:7051 bftsmart/fabric-tools:amd64-1.2.0
+docker run -dit --rm --network=bft_network --name=bft.cli.0  -v $SOURCEPATH/scripts:/scripts -v $SOURCEPATH/CA:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/ -e CORE_PEER_ADDRESS=bft.peer.0:7051 bftsmart/fabric-tools:amd64-1.2.0
+#docker run -dit --rm --network=bft_network --name=bft.cli.1  -v $SOURCEPATH/scripts:/scripts -v $SOURCEPATH/CA:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/ -e CORE_PEER_ADDRESS=bft.peer.0:7051 bftsmart/fabric-tools:amd64-1.2.0
 
 
 echo "create two cli client"
