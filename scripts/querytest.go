@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"gopkg.in/cheggaaa/pb.v1"
 )
 
 
@@ -21,7 +22,6 @@ func QueryTest(key string, fw *os.File) int {
 	cmdstring2 := `"` + key + `"]}`
 
 	cmdstring = cmdstring + cmdstring2
-	fmt.Println(cmd+ cmdstring)
 	args := []string{}
 	for _, each := range (strings.Split(cmd, " ")) {
 		args = append(args, each)
@@ -65,11 +65,12 @@ func main() {
 
 	args[1]: step
 	args[2]: Time for sleep
-	args[3]: start of the transaction
+	args[3]: query times
+	args[4]: MAX
 
 	*/
 	rand.Seed(time.Now().UTC().UnixNano())
-
+	
 	fw, err := os.OpenFile("./notesquery.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755)
 	if err != nil {
 		fmt.Println("errir in create file")
@@ -79,6 +80,7 @@ func main() {
 
 	var num uint64
 	num, err = strconv.ParseUint(os.Args[3], 10, 64)
+	max, err := strconv.ParseUint(os.Args[3], 10, 64)
 
 	SLEEP, err := strconv.Atoi(os.Args[2])
 
@@ -91,12 +93,11 @@ func main() {
 	//var step uint64
 
 	var ret int
-
 	var i uint64
+	bar := pb.StartNew(int(num))
 	for i=0;i<num;i++{
 
-		val := rand.Uint64()% num
-		fmt.Println(val)
+		val := rand.Uint64()% max
 		ret = QueryTest(strconv.FormatUint(val, 10),fw)
 		if ret == -1 {
 			fmt.Printf("err in loop %d\n", i)
@@ -105,8 +106,9 @@ func main() {
 		if (i%step == 0){
 			time.Sleep(time.Duration(SLEEP)*time.Second)
 		}
+	    bar.Increment()
 	}
 
-	fmt.Println("done")
+	bar.FinishPrint("The End!")
 
 }
