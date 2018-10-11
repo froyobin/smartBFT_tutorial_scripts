@@ -6,28 +6,29 @@
 #
 # Exit on first error
 set -e
-set -x
 SOURCEPATH=$(pwd)
+
+DES=$SOURCEPATH/bftsmart-orderer/config/system.config
+cp $SOURCEPATH/bftsmart-orderer/config/systemtemplate.config $DES
+rm  $SOURCEPATH/bftsmart-orderer/config/currentView ||true
+sed -i s/SERVERNAME/$1/g $DES
+nodes=$(($1 - 1))
+str="0"
+for j in `seq 1 $nodes`;
+do
+	str="$str,$j"
+done
+sed -i s/INITVIEW/$str/g $DES
+set -x
 echo "setup the network done"
 docker network create -d bridge bft_network
 
-for i in `seq 0 $1`;
+for i in `seq 0 $nodes`;
 do 
     echo $i
     docker run -d --rm --network=bft_network --name=bft.node.$i -v $SOURCEPATH/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 $i
     sleep 1
 done
-#sleep 1
-#docker run -d --rm --network=bft_network --name=bft.node.1 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 1
-#sleep 1
-#exit
-#docker run -d --rm --network=bft_network --name=bft.node.2 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 2
-#sleep 1
-#docker run -d --rm --network=bft_network --name=bft.node.3 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 3
-#sleep 1
-#docker run -d --rm --network=bft_network --name=bft.node.4 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 4
-#sleep 1
-#docker run -d --rm --network=bft_network --name=bft.node.5 -v /home/yb/sync_smart/smartBFT_tutorial_scripts/bftsmart-orderer:/etc/bftsmart-orderer bftsmart/fabric-orderingnode:amd64-1.2.0 5
 echo "create $1 pbf nodes"
 
 
@@ -49,7 +50,7 @@ sleep 1
 docker exec bft.cli.0 configtxgen -profile SampleSingleMSPChannel -outputAnchorPeersUpdate anchor.tx -channelID channel47 -asOrg SampleOrg
 echo "genenete artifacts"
 echo "we need to sleep for 10 seconds to wait for everything ready"
-sleep 20
+sleep 10
 docker exec bft.cli.0 peer channel create -o bft.frontend.1000:7050 -c channel47 -f channel.tx 
 sleep 3
 docker exec bft.cli.0 peer channel update -o bft.frontend.1000:7050 -c channel47 -f anchor.tx
